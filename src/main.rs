@@ -1,20 +1,46 @@
 extern crate tokio;
+use axum::{response::Html, routing::get, serve, Router};
 
-use tokio::{task::JoinSet, time::sleep, time::Duration};
+use tokio::{
+    net::TcpListener,
+    task::JoinSet,
+    time::{sleep, Duration},
+};
 
 #[tokio::main]
 async fn main() {
     println!("program start!");
+
+    // demo - async sanity check
     let mut set: JoinSet<()> = JoinSet::new();
     let the_vec = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-    for v in the_vec {
+    for _v in the_vec {
         set.spawn(async move {
-            println!("started with {:?}", v);
-            sleep(Duration::from_secs(2)).await;
-            println!("sleep over for {:?}", v);
+            sleep(Duration::from_millis(2)).await;
         });
     }
-    println!("about to await the join");
     set.join_all().await;
-    println!("program completed, about to exit!");
+    println!(
+        "async sanity check completed, expecting program to continue with running axum server"
+    );
+
+    let application = Router::new().route("/", get(handler));
+
+    let listener = TcpListener::bind("127.0.0.1:3333")
+        .await
+        .expect("listener to bind");
+    println!(
+        "listening on {}",
+        listener
+            .local_addr()
+            .expect("listener local_addr to unwrap")
+    );
+
+    serve(listener, application)
+        .await
+        .expect("axum to launch serve");
+}
+
+async fn handler() -> Html<&'static str> {
+    Html("<h1>Basic server with html inline functioning!</h1>")
 }
