@@ -7,6 +7,8 @@ use tokio::{
     time::{sleep, Duration},
 };
 
+use tower_http::services::ServeFile;
+
 #[tokio::main]
 async fn main() {
     println!("program start!");
@@ -35,6 +37,11 @@ async fn main() {
             .local_addr()
             .expect("listener local_addr to unwrap")
     );
+
+    //
+    let rt: Router = Router::new().route_service("/assets", ServeFile::new("index.html"));
+
+    //-----------
 
     serve(listener, application)
         .await
