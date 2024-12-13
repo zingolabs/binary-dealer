@@ -7,7 +7,7 @@ use tokio::{
     time::{sleep, Duration},
 };
 
-use tower_http::{services::ServeFile, trace::TraceLayer};
+use tower_http::{services::ServeDir, trace::TraceLayer};
 
 #[tokio::main]
 async fn main() {
@@ -36,7 +36,7 @@ async fn main() {
             .expect("listener.local_addr() to unwrap")
     );
 
-    let rt: Router = Router::new().route_service("/", ServeFile::new("getme"));
+    let rt: Router = Router::new().nest_service("/assets", ServeDir::new("assets"));
 
     serve(listener, rt.layer(TraceLayer::new_for_http()))
         .await
