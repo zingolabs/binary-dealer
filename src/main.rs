@@ -1,5 +1,5 @@
 extern crate tokio;
-use axum::{response::Html, routing::get, serve, Router};
+use axum::{serve, Router};
 
 use tokio::{
     net::TcpListener,
@@ -7,7 +7,7 @@ use tokio::{
     time::{sleep, Duration},
 };
 
-use tower_http::services::ServeFile;
+use tower_http::{services::ServeFile, trace::TraceLayer};
 
 #[tokio::main]
 async fn main() {
@@ -26,8 +26,6 @@ async fn main() {
         "async sanity check completed, expecting program to continue with running axum server"
     );
 
-    let application = Router::new().route("/", get(handler));
-
     let listener = TcpListener::bind("127.0.0.1:3333")
         .await
         .expect("listener to bind");
@@ -35,19 +33,12 @@ async fn main() {
         "listening on {}",
         listener
             .local_addr()
-            .expect("listener local_addr to unwrap")
+            .expect("listener.local_addr() to unwrap")
     );
 
-    //
-    let rt: Router = Router::new().route_service("/assets", ServeFile::new("index.html"));
+    let rt: Router = Router::new().route_service("/", ServeFile::new("getme"));
 
-    //-----------
-
-    serve(listener, application)
+    serve(listener, rt.layer(TraceLayer::new_for_http()))
         .await
-        .expect("axum to launch serve");
-}
-
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Basic server with html inline functioning!</h1>")
+        .expect("axum to launch serve()");
 }
