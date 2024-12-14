@@ -7,7 +7,7 @@ t of static binary files across multiple projects. With an emphasis on version c
 ase of access, Binary Dealer aims to facilitate the seamless retrieval and deployment of bin
 aries, while automating the build process as it evolves.
 
-## Features
+## Planned Features
 
 - **Static Binary Serving**: Initially, the server will serve static binary files, making it
  easy to access precompiled binaries for various projects.
@@ -34,7 +34,7 @@ sitories, ensuring all binaries are current and accessible.
 
 ## Dependencies
 
-Binary Dealer is built using **Exum** as its core dependency, which provides the foundationa
+Binary Dealer is built using [Exum](https://github.com/tokio-rs/axum) as its core dependency, which provides the foundationa
 l capabilities needed for the server functionality.
 
 ## Getting Started
