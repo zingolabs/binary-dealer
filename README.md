@@ -34,7 +34,7 @@ sitories, ensuring all binaries are current and accessible.
 
 ## Dependencies
 
-Binary Dealer is built using [Exum](https://github.com/tokio-rs/axum) as its core dependency, which provides the foundationa
+Binary Dealer is built using [Axum](https://github.com/tokio-rs/axum) as its core dependency, which provides the foundationa
 l capabilities needed for the server functionality.
 
 ## Getting Started
