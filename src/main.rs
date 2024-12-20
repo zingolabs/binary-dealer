@@ -1,27 +1,30 @@
 extern crate tokio;
-use axum::{serve, Router};
-
-use tokio::net::TcpListener;
-
-use tower_http::{services::ServeDir, trace::TraceLayer};
+use axum::Router;
+use axum_server::tls_rustls::RustlsConfig;
+use std::{net::SocketAddr, path::PathBuf};
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() {
     println!("program start!");
 
-    let listener = TcpListener::bind("127.0.0.1:3333")
-        .await
-        .expect("listener to bind");
-    println!(
-        "listening on {}",
-        listener
-            .local_addr()
-            .expect("listener.local_addr() to unwrap")
-    );
+    let https_port: u16 = 3953;
+    // configure certificate and private key used by https
+    let config = RustlsConfig::from_pem_file(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("self_signed_certs")
+            .join("cert.pem"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("self_signed_certs")
+            .join("key.pem"),
+    )
+    .await
+    .unwrap();
 
-    let rt: Router = Router::new().nest_service("/assets", ServeDir::new("assets"));
-
-    serve(listener, rt.layer(TraceLayer::new_for_http()))
+    let app: Router = Router::new().nest_service("/getme", ServeDir::new("assets/getme"));
+    let addr = SocketAddr::from(([127, 0, 0, 1], https_port));
+    axum_server::bind_rustls(addr, config)
+        .serve(app.into_make_service())
         .await
-        .expect("axum to launch serve()");
+        .expect("axum with rustls serving app to unwrap");
 }
