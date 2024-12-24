@@ -50,11 +50,16 @@ To get started with Binary Dealer, follow these steps:
 2. Build the project:
    ```bash
    cargo build --release
-   ```
+ 
+3. To enable TLS with a self-signed certificate and then return to the project's root folder:
+   ```bash
+   cd self_signed_certs
+   openssl req -newkey rsa:4096  -x509  -sha512  -days 500 -nodes -out cert.pem -keyout key.pem
+   cd ..
 
-3. Run the server:
+4. Run the server:
    ```bash
    cargo run --release
    ```
 
-4. Place your precompiled binaries in the specified directory for access.
+5. Place your precompiled binaries in the specified directory for access.

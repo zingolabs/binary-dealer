@@ -1,36 +1,59 @@
 extern crate tokio;
 use axum::Router;
-
-use std::net::SocketAddr;
-
-use tokio::net::TcpListener;
-
+use axum_server::tls_rustls::RustlsConfig;
+use std::{net::SocketAddr, path::PathBuf};
 use tower_http::{services::ServeDir, trace::TraceLayer};
-
+use tracing::{instrument, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+#[instrument(level = Level::TRACE)]
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                format!("{}=debug,tower_http=debug", env!("CARGO_CRATE_NAME")).into()
+                format!(
+                    "{}=trace,rustls=trace,tokio-rustls=trace,tower=trace,tower_http=trace,axum=trace,axum_server=trace,tracing=trace,tracing_subscriber=trace,tokio=trace",
+                    env!("CARGO_CRATE_NAME")
+                )
+                .into()
             }),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
+    let https_port: u16 = 3953;
+    tracing::info!("set https_port to : {}", https_port);
 
-    let port: u16 = 3333;
-    let rt: Router = Router::new().nest_service("/assets", ServeDir::new("assets"));
+    let app: Router = Router::new()
+        .nest_service("/getme", ServeDir::new("assets/getme"))
+        .layer(TraceLayer::new_for_http());
+    tracing::info!("set app as : {:?}", &app);
 
-    serve(rt, port).await;
+    serve(app, https_port).await;
 }
 
-async fn serve(app: Router, port: u16) {
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    let listener = TcpListener::bind(addr).await.unwrap();
-    tracing::debug!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app.layer(TraceLayer::new_for_http()))
+#[instrument(level = Level::TRACE name = "binary_dealer serve function")]
+async fn serve(app: Router, https_port: u16) {
+    tracing::debug!("serve function launched!");
+    let addr = SocketAddr::from(([127, 0, 0, 1], https_port));
+    tracing::info!("{} address set!", &addr);
+
+    // configure certificate and private key used by https
+    let config = RustlsConfig::from_pem_file(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("self_signed_certs")
+            .join("cert.pem"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("self_signed_certs")
+            .join("key.pem"),
+    )
+    .await
+    .expect("Rustls config to find cert and key");
+
+    tracing::info!("Initialized config: {:?}", &config);
+
+    axum_server::bind_rustls(addr, config)
+        .serve(app.into_make_service())
         .await
-        .unwrap();
+        .expect("axum with rustls serving app to unwrap");
 }
