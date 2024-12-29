@@ -26,6 +26,8 @@ async fn main() {
 
     let app: Router = Router::new()
         .nest_service("/getme", ServeDir::new("assets/getme"))
+        .nest_service("/zcashd", ServeDir::new("assets/getme"))
+        .nest_service("/zainod", ServeDir::new("assets/getme"))
         .layer(TraceLayer::new_for_http());
     tracing::info!("set app as : {:?}", &app);
 
