@@ -26,12 +26,12 @@ async fn main() {
 
     let app: Router = Router::new()
         .nest_service("/getme", ServeDir::new("assets/getme"))
-        .nest_service("/lightwalletd", ServeDir::new("assets/getme"))
-        .nest_service("/zainod", ServeDir::new("assets/getme"))
-        .nest_service("/zcashd", ServeDir::new("assets/getme"))
-        .nest_service("/zcash-cli", ServeDir::new("assets/getme"))
-        .nest_service("/zebrad", ServeDir::new("assets/getme"))
-        .nest_service("/zingo-cli", ServeDir::new("assets/getme"))
+        .nest_service("/lightwalletd", ServeDir::new("assets/lightwalletd"))
+        .nest_service("/zainod", ServeDir::new("assets/zainod"))
+        .nest_service("/zcashd", ServeDir::new("assets/zcashd"))
+        .nest_service("/zcash-cli", ServeDir::new("assets/zcash-cli"))
+        .nest_service("/zebrad", ServeDir::new("assets/zebrad"))
+        .nest_service("/zingo-cli", ServeDir::new("assets/zingo-cli"))
         .layer(TraceLayer::new_for_http());
     tracing::info!("set app as : {:?}", &app);
 
