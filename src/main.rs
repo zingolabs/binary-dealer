@@ -1,7 +1,7 @@
 extern crate tokio;
 use axum::Router;
 use axum_server::tls_rustls::RustlsConfig;
-use std::{net::SocketAddr, path::PathBuf};
+use std::{net::SocketAddr, path::PathBuf, str::FromStr};
 use tower_http::{services::ServeDir, trace::TraceLayer};
 use tracing::{instrument, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -25,7 +25,6 @@ async fn main() {
     tracing::info!("set https_port to : {}", https_port);
 
     let app: Router = Router::new()
-        .nest_service("/getme", ServeDir::new("assets/getme"))
         .nest_service("/lightwalletd", ServeDir::new("assets/lightwalletd"))
         .nest_service("/zainod", ServeDir::new("assets/zainod"))
         .nest_service("/zcashd", ServeDir::new("assets/zcashd"))
@@ -41,17 +40,17 @@ async fn main() {
 #[instrument(level = Level::TRACE name = "binary_dealer serve function")]
 async fn serve(app: Router, https_port: u16) {
     tracing::debug!("serve function launched!");
-    let addr = SocketAddr::from(([127, 0, 0, 1], https_port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], https_port));
     tracing::info!("{} address set!", &addr);
 
-    // configure certificate and private key used by https
+    // configure let's encrypt CA certificate and private key used by https
     let config = RustlsConfig::from_pem_file(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("self_signed_certs")
-            .join("cert.pem"),
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("self_signed_certs")
-            .join("key.pem"),
+        PathBuf::from_str("/etc/letsencrypt/live/zingo-1.decentcloud.net/")
+            .expect("to find letsencrypt dir")
+            .join("fullchain.pem"),
+        PathBuf::from_str("/etc/letsencrypt/live/zingo-1.decentcloud.net/")
+            .expect("to find letsencrypt dir")
+            .join("privkey.pem"),
     )
     .await
     .expect("Rustls config to find cert and key");
