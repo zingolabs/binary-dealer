@@ -21,7 +21,7 @@ async fn main() {
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
-    let https_port: u16 = 3953;
+    let https_port: u16 = 9073;
     tracing::info!("set https_port to : {}", https_port);
 
     let app: Router = Router::new()
