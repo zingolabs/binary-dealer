@@ -45,10 +45,10 @@ async fn serve(app: Router, https_port: u16) {
 
     // configure let's encrypt CA certificate and private key used by https
     let config = RustlsConfig::from_pem_file(
-        PathBuf::from_str("/etc/letsencrypt/live/zingoproxy.com/")
+        PathBuf::from_str("/etc/letsencrypt/live/zingolabs.nexus/")
             .expect("to find letsencrypt dir")
             .join("fullchain.pem"),
-        PathBuf::from_str("/etc/letsencrypt/live/zingoproxy.com/")
+        PathBuf::from_str("/etc/letsencrypt/live/zingolabs.nexus/")
             .expect("to find letsencrypt dir")
             .join("privkey.pem"),
     )
