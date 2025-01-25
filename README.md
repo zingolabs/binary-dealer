@@ -46,20 +46,16 @@ To get started with Binary Dealer, follow these steps:
    git clone https://github.com/zingolabs/binary-dealer.git
    cd binary-dealer
    ```
+2. Generate or add your certs. We've used Let's Encrypt.
+   Customize your domain name with your certs by altering the source code in `src/main.rs` under `config = `.
+   Place your precompiled binaries in the specified directory for access.
 
-2. Build the project:
+3. Build the project:
    ```bash
    cargo build --release
  
-3. To enable TLS with a self-signed certificate and then return to the project's root folder:
-   ```bash
-   cd self_signed_certs
-   openssl req -newkey rsa:4096  -x509  -sha512  -days 500 -nodes -out cert.pem -keyout key.pem
-   cd ..
-
 4. Run the server:
    ```bash
    cargo run --release
    ```
 
-5. Place your precompiled binaries in the specified directory for access.
